@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.Assertions;
 
 public class PlayerInput : MonoBehaviour
@@ -10,7 +11,7 @@ public class PlayerInput : MonoBehaviour
     private const string leftflipperName = "LeftFlipper";
     private const string rightFlipperName = "RightFlipper";
 
-    private Flip flipStript;
+    private Flip flipScript;
 
     #region Unity methods
     private void Awake()
@@ -40,7 +41,7 @@ public class PlayerInput : MonoBehaviour
         transform.position = new Vector3(xPosition, transform.position.y, transform.position.z);
         leftFlipper.isPressed = Input.GetButton(leftflipperName);
         rightFlipper.isPressed = Input.GetButton(rightFlipperName);
-        
+
     }
     #endregion Unity methods
 
@@ -48,6 +49,5 @@ public class PlayerInput : MonoBehaviour
     {
         return transform.Find(flipperName)?.GetComponent<Flip>();
     }
-
 
 }

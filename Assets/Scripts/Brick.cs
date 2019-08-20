@@ -15,7 +15,7 @@ public class Brick : MonoBehaviour
 
     private SpriteRenderer spriteRender;
 
-
+    public static int bricksDestroyed = 0;
 
     private void Awake()
     {
@@ -29,7 +29,6 @@ public class Brick : MonoBehaviour
     {
         if (causeCameraShake)
         {
-            // Todo: Create camera shake
             GameCamera.instance.cameraShake.Shake();
         }
         if (!isBreakable)
@@ -44,6 +43,11 @@ public class Brick : MonoBehaviour
             }
             else
             {
+                bricksDestroyed++;
+                if (bricksDestroyed % GameMode.instance.spawnBallForEveryBricksDestroyed == 0)
+                {
+                    Instantiate(GameMode.instance.ballPrefab, transform.position, Quaternion.identity);
+                }
                 Destroy(gameObject);
             }
         }

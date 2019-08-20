@@ -1,41 +1,99 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Assertions;
+using System.Collections.Generic;
 
+[RequireComponent(typeof(CircleCollider2D))]
 public class Star : MonoBehaviour
 {
-    private SpriteRenderer spriteRenderer;
+    [SerializeField] private Sprite normalMouth = null;
+    [SerializeField] private Sprite worriedMouth = null;
+    public LayerMask reactToLayer;
 
-    [SerializeField]
-    List<Sprite> mouthSprites = new List<Sprite>();
+    private CircleCollider2D awarness;
+    private SpriteRenderer mouth;
+    private LookAtTarget leftEye;
+    private LookAtTarget rightEye;
 
-    private Animator eyeAnim;
+    private List<GameObject> activScaryObjects = new List<GameObject>();
 
-    void Start()
+    private void Awake()
     {
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        Assert.IsNotNull(spriteRenderer, "Failed to find Sprite Renderer component on the Star.");
-        eyeAnim = GetComponent<Animator>();
-        Assert.IsNotNull(eyeAnim, "Failed to find Animator on the Star's eyes.");
+        awarness = GetComponent<CircleCollider2D>();
+        Assert.IsNotNull(awarness, "Failed to find CircleCollider2D");
+
+        Transform go = transform.Find("Eyes/LeftEye/Pupil");
+        Assert.IsNotNull(go, "Faiiled to locate child \"Eyes/LeftEye/Pupil\".");
+
+        leftEye = go.GetComponent<LookAtTarget>();
+        Assert.IsNotNull(leftEye, "Faiiled to locate Look at mouse component.");
+
+        go = transform.Find("Eyes/RightEye/Pupil");
+        Assert.IsNotNull(go, "Faiiled to locate child \"Eyes/RightEye/Pupil\".");
+
+        rightEye = go.GetComponent<LookAtTarget>();
+        Assert.IsNotNull(rightEye, "Faiiled to locate Look at mouse component.");
+
+        go = transform.Find("Mouth");
+        Assert.IsNotNull(go, "Faiiled to locate child \"Mouth\".");
+
+        mouth = go.GetComponent<SpriteRenderer>();
+        Assert.IsNotNull(mouth, "Faiiled to SpriteRenderer component on mouth.");
+
+
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Start()
     {
-        StartCoroutine(ChangeFace());
+        GameMode.instance.OnStarAdded();
     }
 
-    
-    private IEnumerator ChangeFace()
+    private void OnDestroy()
     {
-        while (true)
+        GameMode.instance.OnStarRemoved();
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        Destroy(gameObject);
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        activScaryObjects.Add(collision.gameObject);
+        UpdateTarget();
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        activScaryObjects.Remove(collision.gameObject);
+        UpdateTarget();
+    }
+
+    private void UpdateTarget()
+    {
+        if (activScaryObjects.Count > 0)
         {
-            spriteRenderer.sprite = mouthSprites[0];
-            yield return new WaitForSeconds(3f);
-            spriteRenderer.sprite = mouthSprites[1];
-            eyeAnim.SetTrigger("WinkEye");
-            yield return new WaitForSeconds(3f);
+            Transform target = transform.GetClosestObject(ref activScaryObjects);
+            SetWorried(target);
         }
+        else
+        {
+            SetCool();
+        }
+    }
+
+    public void SetWorried(Transform target)
+    {
+        mouth.sprite = worriedMouth;
+        leftEye.target = target;
+        rightEye.target = target;
+    }
+
+    public void SetCool()
+    {
+        mouth.sprite = normalMouth;
+        leftEye.target = null;
+        rightEye.target = null;
+        rightEye.transform.localPosition = Vector3.zero;
     }
 }

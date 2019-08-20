@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.Assertions;
 
+[SelectionBase]
 public class PlayerInput : MonoBehaviour
 {
     private Camera playerCamera;
